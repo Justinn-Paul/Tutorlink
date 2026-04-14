@@ -1,0 +1,22 @@
+name: Template - CI (PR checks)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Placeholder
+        run: |
+          echo "Template workflow only."
+          echo "Enable real checks later by adding pull_request trigger and npm test/lint/build steps."

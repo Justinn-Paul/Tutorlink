@@ -1,0 +1,31 @@
+name: Template - Deploy Web to S3
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-web:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Placeholder
+        run: |
+          echo "Template S3 deploy only."
+          echo "Later: npm ci && npm run build, then aws s3 sync dist/ s3://<bucket> --delete"
+          echo "Optional later: aws cloudfront create-invalidation --distribution-id <id> --paths '/*'"
