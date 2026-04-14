@@ -1,0 +1,63 @@
+name: Deploy TutorLink Lambdas
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      # Step 3: Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 4: Deploy each Lambda
+      - name: Deploy Lambdas
+        run: |
+          for dir in lambdas/*/; do
+            FUNCTION_NAME="tutorlink-$(basename $dir)"
+            echo "Deploying $FUNCTION_NAME..."
+
+            # Install dependencies if package.json exists
+            if [ -f "$dir/package.json" ]; then
+              npm ci --prefix "$dir"
+              npm run build --if-present --prefix "$dir"
+            fi
+
+            # Zip the function folder (TypeScript lambdas emit root index.js via build)
+            cd "$dir"
+            if [ -f index.js ]; then
+              zip -r "../../${FUNCTION_NAME}.zip" index.js
+            else
+              zip -r "../../${FUNCTION_NAME}.zip" .
+            fi
+            cd ../..
+
+            # Update Lambda function code
+            aws lambda update-function-code \
+              --function-name $FUNCTION_NAME \
+              --zip-file fileb://${FUNCTION_NAME}.zip
+
+            echo "$FUNCTION_NAME deployed successfully"
+          done
+
+      # Step 5: Print success message
+      - name: Deployment complete
+        run: echo "All TutorLink Lambdas deployed successfully!"
