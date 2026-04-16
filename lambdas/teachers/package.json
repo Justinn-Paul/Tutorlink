@@ -1,0 +1,14 @@
+{
+  "name": "tutorlink-teachers",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/handler.ts --bundle --platform=node --target=node22 --format=cjs --outfile=index.js",
+    "ci": "npm ci && npm run build"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^22.12.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.0"
+  }
+}
