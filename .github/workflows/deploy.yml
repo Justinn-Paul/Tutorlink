@@ -10,17 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
-      # Step 3: Configure AWS credentials
+      - name: Install root dependencies and compile TypeScript
+        run: |
+          npm ci
+          npm run build
+          npm prune --omit=dev
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -28,36 +31,54 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 4: Deploy each Lambda
       - name: Deploy Lambdas
         run: |
           for dir in lambdas/*/; do
-            FUNCTION_NAME="tutorlink-$(basename $dir)"
+            name="$(basename "$dir")"
+            if [ "$name" = "shared" ]; then
+              echo "Skipping lambdas/shared (not a deployable function)"
+              continue
+            fi
+
+            FUNCTION_NAME="tutorlink-${name}"
             echo "Deploying $FUNCTION_NAME..."
 
-            # Install dependencies if package.json exists
-            if [ -f "$dir/package.json" ]; then
-              npm ci --prefix "$dir"
-              npm run build --if-present --prefix "$dir"
+            if [ "$name" = "auth" ]; then
+              for f in signup login refresh; do
+                if [ ! -f "dist/auth/${f}.js" ]; then
+                  echo "Missing dist/auth/${f}.js — run npm run build locally"
+                  exit 1
+                fi
+              done
+              rm -rf .lambda-pack-auth
+              mkdir -p .lambda-pack-auth
+              cp dist/auth/*.js .lambda-pack-auth/
+              cp -R node_modules .lambda-pack-auth/
+              (cd .lambda-pack-auth && zip -r ../tutorlink-auth.zip .)
+              rm -rf .lambda-pack-auth
+              for suffix in signup login refresh; do
+                aws lambda update-function-code \
+                  --function-name "tutorlink-auth-${suffix}" \
+                  --zip-file "fileb://tutorlink-auth.zip"
+              done
+              rm -f tutorlink-auth.zip
+              echo "$FUNCTION_NAME (signup, login, refresh) deployed successfully"
+              continue
             fi
 
-            # Zip the function folder (TypeScript lambdas emit root index.js via build)
-            cd "$dir"
-            if [ -f index.js ]; then
-              zip -r "../../${FUNCTION_NAME}.zip" index.js
-            else
-              zip -r "../../${FUNCTION_NAME}.zip" .
+            if [ ! -f "dist/${name}/index.js" ]; then
+              echo "Missing dist/${name}/index.js — add lambdas/${name}/index.ts and ensure npm run build emits it"
+              exit 1
             fi
-            cd ../..
 
-            # Update Lambda function code
+            (cd "dist/${name}" && zip -r "../../${FUNCTION_NAME}.zip" .)
+
             aws lambda update-function-code \
-              --function-name $FUNCTION_NAME \
-              --zip-file fileb://${FUNCTION_NAME}.zip
+              --function-name "$FUNCTION_NAME" \
+              --zip-file "fileb://${FUNCTION_NAME}.zip"
 
             echo "$FUNCTION_NAME deployed successfully"
           done
 
-      # Step 5: Print success message
       - name: Deployment complete
         run: echo "All TutorLink Lambdas deployed successfully!"

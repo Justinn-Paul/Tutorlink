@@ -1,7 +1,30 @@
+# Dependencies
 node_modules/
-*.zip
+
+# Env and secrets
 .env
 .env.local
+.env.*.local
+
+# TypeScript build output (root tsc → dist/)
 dist/
+
+# Stray JS emitted next to lambdas/*.ts (should only live under dist/)
 lambdas/**/index.js
+
+# Archives produced during Lambda zip deploy
+*.zip
+
+# OS / editor
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs and coverage
+*.log
+npm-debug.log*
+coverage/
+.nyc_output/

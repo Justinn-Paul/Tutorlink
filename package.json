@@ -1,0 +1,16 @@
+{
+  "name": "tutorlink-backend",
+  "private": true,
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.700.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^22.12.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.0"
+  }
+}
