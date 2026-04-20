@@ -43,6 +43,11 @@ jobs:
             FUNCTION_NAME="tutorlink-${name}"
             echo "Deploying $FUNCTION_NAME..."
 
+            # Auth: zip has signup.js, login.js, refresh.js at zip root (no index.js).
+            # In AWS each function's Handler must be:
+            #   tutorlink-auth-signup   -> signup.handler
+            #   tutorlink-auth-login    -> login.handler
+            #   tutorlink-auth-refresh  -> refresh.handler
             if [ "$name" = "auth" ]; then
               for f in signup login refresh; do
                 if [ ! -f "dist/auth/${f}.js" ]; then

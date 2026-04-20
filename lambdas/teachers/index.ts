@@ -1,4 +1,5 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { isOptionsRequest, jsonResponse, optionsResponse } from "../shared/http";
 
 type TeacherProfile = {
   teacherId: string;
@@ -40,16 +41,17 @@ const TEACHERS: TeacherProfile[] = [
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
+  if (isOptionsRequest(event)) {
+    return optionsResponse();
+  }
+
   console.log("Incoming event:", JSON.stringify(event));
 
-  return {
-    statusCode: 200,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  return jsonResponse(200, {
+    success: true,
+    data: {
       teachers: TEACHERS,
       count: TEACHERS.length,
-    }),
-  };
+    },
+  });
 };

@@ -3,7 +3,12 @@ import {
   CognitoIdentityProviderClient,
   InitiateAuthCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import type { ApiResponse } from "../shared/types";
+import {
+  isOptionsRequest,
+  jsonResponse,
+  optionsResponse,
+  parseJsonBody,
+} from "../shared/http";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -11,32 +16,6 @@ function requireEnv(name: string): string {
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return v;
-}
-
-function parseJsonBody(event: APIGatewayProxyEvent): unknown {
-  if (event.body == null || event.body === "") {
-    return undefined;
-  }
-  const raw =
-    event.isBase64Encoded === true
-      ? Buffer.from(event.body, "base64").toString("utf8")
-      : event.body;
-  try {
-    return JSON.parse(raw) as unknown;
-  } catch {
-    return undefined;
-  }
-}
-
-function jsonResponse<T>(
-  statusCode: number,
-  payload: ApiResponse<T>
-): APIGatewayProxyResult {
-  return {
-    statusCode,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  };
 }
 
 type RefreshData = {
@@ -49,12 +28,16 @@ type RefreshData = {
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
+  if (isOptionsRequest(event)) {
+    return optionsResponse();
+  }
+
   try {
     requireEnv("COGNITO_USER_POOL_ID");
     const clientId = requireEnv("COGNITO_CLIENT_ID");
 
     const body = parseJsonBody(event);
-    if (body == null || typeof body !== "object" || body === null) {
+    if (body == null || typeof body !== "object") {
       return jsonResponse(400, {
         success: false,
         error: "Invalid JSON body",
@@ -86,11 +69,7 @@ export const handler = async (
     );
 
     const auth = out.AuthenticationResult;
-    if (
-      !auth?.IdToken ||
-      !auth.AccessToken ||
-      auth.ExpiresIn == null
-    ) {
+    if (!auth?.IdToken || !auth.AccessToken || auth.ExpiresIn == null) {
       console.error("refresh: missing AuthenticationResult fields", out);
       return jsonResponse(500, {
         success: false,

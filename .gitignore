@@ -5,9 +5,11 @@ node_modules/
 .env
 .env.local
 .env.*.local
+web/.env.local
 
-# TypeScript build output (root tsc → dist/)
+# TypeScript / Vite build output
 dist/
+web/dist/
 
 # Stray JS emitted next to lambdas/*.ts (should only live under dist/)
 lambdas/**/index.js
