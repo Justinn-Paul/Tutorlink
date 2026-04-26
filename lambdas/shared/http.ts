@@ -4,13 +4,9 @@ import type { ApiResponse } from "./types";
 const DEFAULT_ALLOW_HEADERS = "Content-Type,Authorization";
 const DEFAULT_ALLOW_METHODS = "GET,POST,PUT,PATCH,DELETE,OPTIONS";
 
-function getAllowOrigin(): string {
-  return process.env.CORS_ALLOW_ORIGIN ?? "*";
-}
-
 export function corsHeaders(): Record<string, string> {
   return {
-    "Access-Control-Allow-Origin": getAllowOrigin(),
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": DEFAULT_ALLOW_HEADERS,
     "Access-Control-Allow-Methods": DEFAULT_ALLOW_METHODS,
     "Content-Type": "application/json",

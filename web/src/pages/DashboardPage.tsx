@@ -37,6 +37,12 @@ export function DashboardPage() {
             show up here as you build the product.
           </p>
           <p className="mt-4 text-sm">
+            <Link
+              to="/profile"
+              className="mr-4 font-medium text-brand-700 hover:text-brand-800"
+            >
+              Edit profile
+            </Link>
             <Link to="/login" className="font-medium text-brand-700 hover:text-brand-800">
               Back to login
             </Link>

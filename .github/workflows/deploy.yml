@@ -22,7 +22,6 @@ jobs:
         run: |
           npm ci
           npm run build
-          npm prune --omit=dev
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -43,11 +42,11 @@ jobs:
             FUNCTION_NAME="tutorlink-${name}"
             echo "Deploying $FUNCTION_NAME..."
 
-            # Auth: zip has signup.js, login.js, refresh.js at zip root (no index.js).
-            # In AWS each function's Handler must be:
-            #   tutorlink-auth-signup   -> signup.handler
-            #   tutorlink-auth-login    -> login.handler
-            #   tutorlink-auth-refresh  -> refresh.handler
+            # Auth lambdas import ../shared/http, so package auth/ and shared/ together.
+            # Handlers are configured as:
+            #   tutorlink-auth-signup   -> auth/signup.handler
+            #   tutorlink-auth-login    -> auth/login.handler
+            #   tutorlink-auth-refresh  -> auth/refresh.handler
             if [ "$name" = "auth" ]; then
               for f in signup login refresh; do
                 if [ ! -f "dist/auth/${f}.js" ]; then
@@ -55,9 +54,14 @@ jobs:
                   exit 1
                 fi
               done
+              if [ ! -f "dist/shared/http.js" ]; then
+                echo "Missing dist/shared/http.js — run npm run build locally"
+                exit 1
+              fi
               rm -rf .lambda-pack-auth
-              mkdir -p .lambda-pack-auth
-              cp dist/auth/*.js .lambda-pack-auth/
+              mkdir -p .lambda-pack-auth/auth .lambda-pack-auth/shared
+              cp dist/auth/*.js .lambda-pack-auth/auth/
+              cp dist/shared/*.js .lambda-pack-auth/shared/
               cp -R node_modules .lambda-pack-auth/
               (cd .lambda-pack-auth && zip -r ../tutorlink-auth.zip .)
               rm -rf .lambda-pack-auth
@@ -65,6 +69,9 @@ jobs:
                 aws lambda update-function-code \
                   --function-name "tutorlink-auth-${suffix}" \
                   --zip-file "fileb://tutorlink-auth.zip"
+                aws lambda update-function-configuration \
+                  --function-name "tutorlink-auth-${suffix}" \
+                  --handler "auth/${suffix}.handler"
               done
               rm -f tutorlink-auth.zip
               echo "$FUNCTION_NAME (signup, login, refresh) deployed successfully"
@@ -76,11 +83,25 @@ jobs:
               exit 1
             fi
 
-            (cd "dist/${name}" && zip -r "../../${FUNCTION_NAME}.zip" .)
+            if [ ! -f "dist/shared/http.js" ]; then
+              echo "Missing dist/shared/http.js — run npm run build locally"
+              exit 1
+            fi
+
+            rm -rf ".lambda-pack-${name}"
+            mkdir -p ".lambda-pack-${name}/${name}" ".lambda-pack-${name}/shared"
+            cp "dist/${name}/index.js" ".lambda-pack-${name}/${name}/index.js"
+            cp dist/shared/*.js ".lambda-pack-${name}/shared/"
+            cp -R node_modules ".lambda-pack-${name}/node_modules"
+            (cd ".lambda-pack-${name}" && zip -r "../${FUNCTION_NAME}.zip" .)
+            rm -rf ".lambda-pack-${name}"
 
             aws lambda update-function-code \
               --function-name "$FUNCTION_NAME" \
               --zip-file "fileb://${FUNCTION_NAME}.zip"
+            aws lambda update-function-configuration \
+              --function-name "$FUNCTION_NAME" \
+              --handler "${name}/index.handler"
 
             echo "$FUNCTION_NAME deployed successfully"
           done
