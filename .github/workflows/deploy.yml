@@ -78,10 +78,18 @@ jobs:
               continue
             fi
 
-            if [ ! -f "dist/${name}/index.js" ]; then
-              echo "Missing dist/${name}/index.js — add lambdas/${name}/index.ts and ensure npm run build emits it"
+            entry_js_files=(dist/${name}/*.js)
+            if [ ! -f "${entry_js_files[0]}" ]; then
+              echo "Missing compiled entry for dist/${name}/*.js — ensure lambdas/${name} has one handler .ts file"
               exit 1
             fi
+            if [ "${#entry_js_files[@]}" -ne 1 ]; then
+              echo "Expected exactly one entry file in dist/${name}, found ${#entry_js_files[@]}"
+              exit 1
+            fi
+            entry_js_path="${entry_js_files[0]}"
+            entry_js_name="$(basename "$entry_js_path")"
+            entry_module="${entry_js_name%.js}"
 
             if [ ! -f "dist/shared/http.js" ]; then
               echo "Missing dist/shared/http.js — run npm run build locally"
@@ -90,7 +98,7 @@ jobs:
 
             rm -rf ".lambda-pack-${name}"
             mkdir -p ".lambda-pack-${name}/${name}" ".lambda-pack-${name}/shared"
-            cp "dist/${name}/index.js" ".lambda-pack-${name}/${name}/index.js"
+            cp "$entry_js_path" ".lambda-pack-${name}/${name}/${entry_js_name}"
             cp dist/shared/*.js ".lambda-pack-${name}/shared/"
             cp -R node_modules ".lambda-pack-${name}/node_modules"
             (cd ".lambda-pack-${name}" && zip -r "../${FUNCTION_NAME}.zip" .)
@@ -101,7 +109,7 @@ jobs:
               --zip-file "fileb://${FUNCTION_NAME}.zip"
             aws lambda update-function-configuration \
               --function-name "$FUNCTION_NAME" \
-              --handler "${name}/index.handler"
+                  --handler "${name}/${entry_module}.handler"
 
             echo "$FUNCTION_NAME deployed successfully"
           done
