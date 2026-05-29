@@ -37,6 +37,14 @@ jobs:
 
       - name: Deploy Lambdas
         run: |
+          set -euo pipefail
+
+          # Lambda applies code/config updates asynchronously; wait before the next API call.
+          wait_for_lambda() {
+            echo "Waiting for $1 to finish updating..."
+            aws lambda wait function-updated --function-name "$1"
+          }
+
           for dir in lambdas/*/; do
             name="$(basename "$dir")"
             if [ "$name" = "shared" ]; then
@@ -71,12 +79,15 @@ jobs:
               (cd .lambda-pack-auth && zip -r ../tutorlink-auth.zip .)
               rm -rf .lambda-pack-auth
               for suffix in signup login refresh; do
+                fn="tutorlink-auth-${suffix}"
                 aws lambda update-function-code \
-                  --function-name "tutorlink-auth-${suffix}" \
+                  --function-name "$fn" \
                   --zip-file "fileb://tutorlink-auth.zip"
+                wait_for_lambda "$fn"
                 aws lambda update-function-configuration \
-                  --function-name "tutorlink-auth-${suffix}" \
+                  --function-name "$fn" \
                   --handler "auth/${suffix}.handler"
+                wait_for_lambda "$fn"
               done
               rm -f tutorlink-auth.zip
               echo "$FUNCTION_NAME (signup, login, refresh) deployed successfully"
@@ -112,9 +123,11 @@ jobs:
             aws lambda update-function-code \
               --function-name "$FUNCTION_NAME" \
               --zip-file "fileb://${FUNCTION_NAME}.zip"
+            wait_for_lambda "$FUNCTION_NAME"
             aws lambda update-function-configuration \
               --function-name "$FUNCTION_NAME" \
-                  --handler "${name}/${entry_module}.handler"
+              --handler "${name}/${entry_module}.handler"
+            wait_for_lambda "$FUNCTION_NAME"
 
             echo "$FUNCTION_NAME deployed successfully"
           done
