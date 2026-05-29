@@ -2,9 +2,12 @@ import type { ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { DashboardPage } from "./pages/DashboardPage";
+import { DiscoveryPage } from "./pages/DiscoveryPage";
 import { LoginPage } from "./pages/LoginPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { SignupPage } from "./pages/SignupPage";
+import { TeacherEditPage } from "./pages/TeacherEditPage";
+import { TeacherPublicPage } from "./pages/TeacherPublicPage";
 import { TeacherSetupPage } from "./pages/TeacherSetupPage";
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -44,6 +47,23 @@ function AppRoutes() {
           </RequireAuth>
         }
       />
+      <Route
+        path="/teacher-profile/edit"
+        element={
+          <RequireAuth>
+            <TeacherEditPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/discovery"
+        element={
+          <RequireAuth>
+            <DiscoveryPage />
+          </RequireAuth>
+        }
+      />
+      <Route path="/teachers/:teacherId" element={<TeacherPublicPage />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

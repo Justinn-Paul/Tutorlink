@@ -33,18 +33,14 @@ export function DashboardPage() {
             </span>
           </p>
           <p className="mt-6 text-sm text-slate-500">
-            This dashboard is a placeholder. Booking, discovery, and schedules will
-            show up here as you build the product.
+            Find tutors, manage your profile, or set up your teacher listing.
           </p>
-          <p className="mt-4 text-sm">
-            <Link
-              to="/profile"
-              className="mr-4 font-medium text-brand-700 hover:text-brand-800"
-            >
-              Edit profile
+          <p className="mt-4 flex flex-wrap gap-4 text-sm">
+            <Link to="/discovery" className="font-medium text-brand-700 hover:text-brand-800">
+              Find tutors
             </Link>
-            <Link to="/login" className="font-medium text-brand-700 hover:text-brand-800">
-              Back to login
+            <Link to="/profile" className="font-medium text-brand-700 hover:text-brand-800">
+              My profile
             </Link>
           </p>
         </div>

@@ -1,13 +1,20 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import type { TeacherProfile } from "../types/teacher";
 
 type TeacherCardProps = {
-  teacherProfile: TeacherProfile & { name: string; photoUrl?: string };
+  teacherProfile: TeacherProfile & { name?: string; photoUrl?: string };
   onSave?: () => void;
+  saveLabel?: string;
 };
 
-export function TeacherCard({ teacherProfile, onSave }: TeacherCardProps) {
+export function TeacherCard({
+  teacherProfile,
+  onSave,
+  saveLabel = "Save to Deck",
+}: TeacherCardProps) {
   const [expandedBio, setExpandedBio] = useState(false);
+  const displayName = teacherProfile.name?.trim() || "Tutor";
 
   const rating =
     teacherProfile.ratingAvg ?? teacherProfile.rating_avg ?? 0;
@@ -31,7 +38,7 @@ export function TeacherCard({ teacherProfile, onSave }: TeacherCardProps) {
           {teacherProfile.photoUrl ? (
             <img
               src={teacherProfile.photoUrl}
-              alt={teacherProfile.name}
+              alt={displayName}
               className="h-full w-full object-cover"
             />
           ) : (
@@ -44,7 +51,7 @@ export function TeacherCard({ teacherProfile, onSave }: TeacherCardProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h3 className="truncate text-lg font-semibold text-slate-900">{teacherProfile.name}</h3>
+              <h3 className="truncate text-lg font-semibold text-slate-900">{displayName}</h3>
               <p className="mt-0.5 text-sm text-slate-600">{teacherProfile.location}</p>
             </div>
             {teacherProfile.verificationStatus === "verified" ? (
@@ -91,13 +98,23 @@ export function TeacherCard({ teacherProfile, onSave }: TeacherCardProps) {
         ) : null}
       </div>
 
-      <button
-        type="button"
-        onClick={onSave}
-        className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
-      >
-        Save to Deck
-      </button>
+      <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+        <Link
+          to={`/teachers/${encodeURIComponent(teacherProfile.teacherId)}`}
+          className="inline-flex flex-1 items-center justify-center rounded-full border border-brand-700 px-4 py-2.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+        >
+          View profile
+        </Link>
+        {onSave ? (
+          <button
+            type="button"
+            onClick={onSave}
+            className="inline-flex flex-1 items-center justify-center rounded-full bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
+          >
+            {saveLabel}
+          </button>
+        ) : null}
+      </div>
     </article>
   );
 }

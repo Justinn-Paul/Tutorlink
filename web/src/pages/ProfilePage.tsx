@@ -52,6 +52,7 @@ export function ProfilePage() {
   const [roleMessage, setRoleMessage] = useState<string | null>(null);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [teacherProfileExists, setTeacherProfileExists] = useState<boolean | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
@@ -125,6 +126,34 @@ export function ProfilePage() {
       cancelled = true;
     };
   }, [getIdToken]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkTeacherProfile() {
+      if (!hasTeacherRole || !profile?.userId) {
+        setTeacherProfileExists(null);
+        return;
+      }
+
+      try {
+        const res = await authedFetch(
+          `${apiBase()}/teachers/${encodeURIComponent(profile.userId)}`
+        );
+        if (!cancelled) {
+          setTeacherProfileExists(res.status === 200);
+        }
+      } catch {
+        if (!cancelled) setTeacherProfileExists(false);
+      }
+    }
+
+    void checkTeacherProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hasTeacherRole, profile?.userId, getIdToken]);
 
   async function saveProfile(payload: Record<string, unknown>) {
     if (!profile?.userId) return;
@@ -420,7 +449,36 @@ export function ProfilePage() {
                       {switchingRole ? "Updating..." : "Become a Teacher"}
                     </button>
                   </div>
-                ) : null}
+                ) : (
+                  <div className="mt-8 space-y-3 border-t border-slate-200 pt-6">
+                    <h2 className="text-sm font-semibold text-slate-900">Teacher listing</h2>
+                    {teacherProfileExists === null ? (
+                      <p className="text-sm text-slate-500">Checking teacher profile...</p>
+                    ) : teacherProfileExists ? (
+                      <div className="flex flex-wrap gap-3">
+                        <Link
+                          to="/teacher-profile/edit"
+                          className="inline-flex items-center justify-center rounded-full border border-brand-700 px-5 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+                        >
+                          Edit teacher profile
+                        </Link>
+                        <Link
+                          to={`/teachers/${encodeURIComponent(profile?.userId ?? "")}`}
+                          className="inline-flex items-center justify-center rounded-full bg-brand-700 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-800"
+                        >
+                          View public profile
+                        </Link>
+                      </div>
+                    ) : (
+                      <Link
+                        to="/teacher-setup"
+                        className="inline-flex items-center justify-center rounded-full bg-brand-700 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-800"
+                      >
+                        Set up teacher profile
+                      </Link>
+                    )}
+                  </div>
+                )}
               </section>
             </div>
           )}
