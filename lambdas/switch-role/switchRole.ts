@@ -82,8 +82,10 @@ export const handler = async (
       new UpdateCommand({
         TableName: tableName,
         Key: { userId },
-        UpdateExpression: "SET roles = list_append(if_not_exists(roles, :emptyList), :newRole), #updatedAt = :updatedAt",
+        UpdateExpression:
+          "SET #roles = list_append(if_not_exists(#roles, :emptyList), :newRole), #updatedAt = :updatedAt",
         ExpressionAttributeNames: {
+          "#roles": "roles",
           "#updatedAt": "updatedAt",
         },
         ExpressionAttributeValues: {
