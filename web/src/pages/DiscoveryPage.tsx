@@ -5,9 +5,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { decodeJwtPayload } from "../auth/jwt";
+import { AppNav } from "../components/AppNav";
 import { TeacherCard } from "../components/TeacherCard";
 import { apiBase, type ApiResponse } from "../lib/api";
 import { authedFetch } from "../lib/authFetch";
@@ -42,7 +42,7 @@ function getStudentIdFromToken(idToken: string): string | null {
 }
 
 export function DiscoveryPage() {
-  const { getIdToken, logout } = useAuth();
+  const { getIdToken } = useAuth();
 
   const [filterInputs, setFilterInputs] = useState<Filters>({
     subject: "",
@@ -285,25 +285,7 @@ export function DiscoveryPage() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-2xl items-center justify-between px-4 sm:px-6">
-          <Link to="/dashboard" className="text-lg font-semibold tracking-tight text-brand-800">
-            TutorLink
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/profile" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-              Profile
-            </Link>
-            <button
-              type="button"
-              onClick={() => logout()}
-              className="text-sm font-medium text-slate-600 hover:text-slate-900"
-            >
-              Log out
-            </button>
-          </div>
-        </div>
-      </header>
+      <AppNav maxWidth="max-w-2xl" />
 
       {toast ? (
         <div

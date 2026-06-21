@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { DashboardPage } from "./pages/DashboardPage";
+import { DeckPage } from "./pages/DeckPage";
 import { DiscoveryPage } from "./pages/DiscoveryPage";
 import { LoginPage } from "./pages/LoginPage";
 import { ProfilePage } from "./pages/ProfilePage";
@@ -62,6 +63,14 @@ function AppRoutes() {
         element={
           <RequireAuth>
             <DiscoveryPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/deck"
+        element={
+          <RequireAuth>
+            <DeckPage />
           </RequireAuth>
         }
       />

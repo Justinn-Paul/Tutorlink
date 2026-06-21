@@ -1,5 +1,6 @@
 import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { AppNav } from "../components/AppNav";
 import { useAuth } from "../auth/AuthContext";
 import { decodeJwtPayload } from "../auth/jwt";
 
@@ -40,7 +41,7 @@ function roleLabel(role: string): string {
 }
 
 export function ProfilePage() {
-  const { getIdToken, logout, userEmail } = useAuth();
+  const { getIdToken, userEmail } = useAuth();
 
   const [fetching, setFetching] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -307,20 +308,7 @@ export function ProfilePage() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <Link to="/dashboard" className="text-lg font-semibold tracking-tight text-brand-800">
-            TutorLink
-          </Link>
-          <button
-            type="button"
-            onClick={() => logout()}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900"
-          >
-            Log out
-          </button>
-        </div>
-      </header>
+      <AppNav />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-card sm:p-8">

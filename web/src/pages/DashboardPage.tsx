@@ -1,25 +1,13 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { AppNav } from "../components/AppNav";
 
 export function DashboardPage() {
-  const { userEmail, logout } = useAuth();
+  const { userEmail } = useAuth();
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <span className="text-lg font-semibold tracking-tight text-brand-800">
-            TutorLink
-          </span>
-          <button
-            type="button"
-            onClick={() => logout()}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900"
-          >
-            Log out
-          </button>
-        </div>
-      </header>
+      <AppNav maxWidth="max-w-6xl" />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-12 sm:px-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-card">
@@ -38,6 +26,9 @@ export function DashboardPage() {
           <p className="mt-4 flex flex-wrap gap-4 text-sm">
             <Link to="/discovery" className="font-medium text-brand-700 hover:text-brand-800">
               Find tutors
+            </Link>
+            <Link to="/deck" className="font-medium text-brand-700 hover:text-brand-800">
+              My deck
             </Link>
             <Link to="/profile" className="font-medium text-brand-700 hover:text-brand-800">
               My profile
