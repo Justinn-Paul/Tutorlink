@@ -57,11 +57,13 @@ jobs:
 
             # Auth lambdas import ../shared/http, so package auth/ and shared/ together.
             # Handlers are configured as:
-            #   tutorlink-auth-signup   -> auth/signup.handler
-            #   tutorlink-auth-login    -> auth/login.handler
-            #   tutorlink-auth-refresh  -> auth/refresh.handler
+            #   tutorlink-auth-signup       -> auth/signup.handler
+            #   tutorlink-auth-login        -> auth/login.handler
+            #   tutorlink-auth-refresh      -> auth/refresh.handler
+            #   tutorlink-auth-verify       -> auth/verify.handler
+            #   tutorlink-auth-resend-code  -> auth/resend-code.handler
             if [ "$name" = "auth" ]; then
-              for f in signup login refresh; do
+              for f in signup login refresh verify resend-code; do
                 if [ ! -f "dist/auth/${f}.js" ]; then
                   echo "Missing dist/auth/${f}.js — run npm run build locally"
                   exit 1
@@ -78,7 +80,7 @@ jobs:
               cp -R node_modules .lambda-pack-auth/
               (cd .lambda-pack-auth && zip -r ../tutorlink-auth.zip .)
               rm -rf .lambda-pack-auth
-              for suffix in signup login refresh; do
+              for suffix in signup login refresh verify resend-code; do
                 fn="tutorlink-auth-${suffix}"
                 aws lambda update-function-code \
                   --function-name "$fn" \
@@ -90,7 +92,7 @@ jobs:
                 wait_for_lambda "$fn"
               done
               rm -f tutorlink-auth.zip
-              echo "$FUNCTION_NAME (signup, login, refresh) deployed successfully"
+              echo "$FUNCTION_NAME (signup, login, refresh, verify, resend-code) deployed successfully"
               continue
             fi
 

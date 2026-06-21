@@ -2,7 +2,9 @@
   "name": "tutorlink-backend",
   "private": true,
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "seed": "ts-node --project scripts/tsconfig.json scripts/seed-dynamodb.ts",
+    "seed:dry-run": "ts-node --project scripts/tsconfig.json scripts/seed-dynamodb.ts -- --dry-run"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.700.0"

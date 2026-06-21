@@ -6,6 +6,7 @@ import { DiscoveryPage } from "./pages/DiscoveryPage";
 import { LoginPage } from "./pages/LoginPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { SignupPage } from "./pages/SignupPage";
+import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { TeacherEditPage } from "./pages/TeacherEditPage";
 import { TeacherPublicPage } from "./pages/TeacherPublicPage";
 import { TeacherSetupPage } from "./pages/TeacherSetupPage";
@@ -23,6 +24,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/verify" element={<VerifyEmailPage />} />
       <Route
         path="/dashboard"
         element={

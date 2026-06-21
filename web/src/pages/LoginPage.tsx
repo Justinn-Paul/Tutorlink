@@ -1,22 +1,17 @@
 import { type FormEvent, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth, type AuthTokens } from "../auth/AuthContext";
+import { apiBase, type ApiResponse } from "../lib/api";
 
-type ApiResponse<T> = {
-  success: boolean;
-  data?: T;
-  error?: string;
+type LocationState = {
+  message?: string;
 };
-
-function apiBase(): string {
-  const base = import.meta.env.VITE_API_BASE_URL;
-  if (!base) throw new Error("VITE_API_BASE_URL is not set");
-  return base.replace(/\/$/, "");
-}
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isAuthenticated } = useAuth();
+  const successMessage = (location.state as LocationState | null)?.message ?? null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +77,15 @@ export function LoginPage() {
             <p className="mt-2 text-sm text-slate-600">
               Welcome back to Singapore&apos;s tutor marketplace.
             </p>
+
+            {successMessage ? (
+              <div
+                className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900"
+                role="status"
+              >
+                {successMessage}
+              </div>
+            ) : null}
 
             <form onSubmit={onSubmit} className="mt-8 space-y-5">
               <div>

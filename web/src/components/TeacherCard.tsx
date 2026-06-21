@@ -6,12 +6,17 @@ type TeacherCardProps = {
   teacherProfile: TeacherProfile & { name?: string; photoUrl?: string };
   onSave?: () => void;
   saveLabel?: string;
+  /** Hide footer actions — use when parent provides skip/save controls (e.g. discovery feed). */
+  hideActions?: boolean;
+  className?: string;
 };
 
 export function TeacherCard({
   teacherProfile,
   onSave,
   saveLabel = "Save to Deck",
+  hideActions = false,
+  className = "",
 }: TeacherCardProps) {
   const [expandedBio, setExpandedBio] = useState(false);
   const displayName = teacherProfile.name?.trim() || "Tutor";
@@ -32,7 +37,9 @@ export function TeacherCard({
   const hasLongBio = teacherProfile.bio.length > 180;
 
   return (
-    <article className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
+    <article
+      className={`w-full max-w-md rounded-3xl border border-slate-200 bg-white p-5 shadow-card sm:p-6 ${className}`}
+    >
       <div className="flex items-start gap-4">
         <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
           {teacherProfile.photoUrl ? (
@@ -98,23 +105,34 @@ export function TeacherCard({
         ) : null}
       </div>
 
-      <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-        <Link
-          to={`/teachers/${encodeURIComponent(teacherProfile.teacherId)}`}
-          className="inline-flex flex-1 items-center justify-center rounded-full border border-brand-700 px-4 py-2.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
-        >
-          View profile
-        </Link>
-        {onSave ? (
-          <button
-            type="button"
-            onClick={onSave}
-            className="inline-flex flex-1 items-center justify-center rounded-full bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
+      {!hideActions ? (
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+          <Link
+            to={`/teachers/${encodeURIComponent(teacherProfile.teacherId)}`}
+            className="inline-flex flex-1 items-center justify-center rounded-full border border-brand-700 px-4 py-2.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
           >
-            {saveLabel}
-          </button>
-        ) : null}
-      </div>
+            View profile
+          </Link>
+          {onSave ? (
+            <button
+              type="button"
+              onClick={onSave}
+              className="inline-flex flex-1 items-center justify-center rounded-full bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
+            >
+              {saveLabel}
+            </button>
+          ) : null}
+        </div>
+      ) : (
+        <div className="mt-5 text-center">
+          <Link
+            to={`/teachers/${encodeURIComponent(teacherProfile.teacherId)}`}
+            className="text-sm font-medium text-brand-700 hover:text-brand-800"
+          >
+            View full profile
+          </Link>
+        </div>
+      )}
     </article>
   );
 }

@@ -1,28 +1,17 @@
 import { type FormEvent, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { apiBase, type ApiResponse } from "../lib/api";
 
 type Role = "student" | "teacher";
 
-type ApiResponse<T> = {
-  success: boolean;
-  data?: T;
-  error?: string;
-};
-
-function apiBase(): string {
-  const base = import.meta.env.VITE_API_BASE_URL;
-  if (!base) throw new Error("VITE_API_BASE_URL is not set");
-  return base.replace(/\/$/, "");
-}
-
 export function SignupPage() {
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("student");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   if (isAuthenticated) {
@@ -32,7 +21,6 @@ export function SignupPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    setSuccess(false);
 
     if (password.length < 8) {
       setError("Password must be at least 8 characters.");
@@ -50,7 +38,7 @@ export function SignupPage() {
       const json = (await res.json()) as ApiResponse<{ message?: string; email?: string }>;
 
       if (res.status === 201 && json.success) {
-        setSuccess(true);
+        navigate(`/verify?email=${encodeURIComponent(email)}`, { replace: true });
         return;
       }
 
@@ -87,15 +75,7 @@ export function SignupPage() {
               Join TutorLink to find trusted tutors across Singapore.
             </p>
 
-            {success ? (
-              <div
-                className="mt-8 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
-                role="status"
-              >
-                Check your email for a verification code
-              </div>
-            ) : (
-              <form onSubmit={onSubmit} className="mt-8 space-y-5">
+            <form onSubmit={onSubmit} className="mt-8 space-y-5">
                 <div>
                   <label
                     htmlFor="email"
@@ -185,9 +165,8 @@ export function SignupPage() {
                   className="flex w-full items-center justify-center rounded-full bg-brand-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {loading ? "Creating account…" : "Create Account"}
-                </button>
-              </form>
-            )}
+              </button>
+            </form>
 
             <p className="mt-6 text-center text-sm text-slate-600">
               Already have an account?{" "}
